@@ -6,27 +6,17 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-y: scroll; /* Force scrollbar to prevent layout shift */
 }
 
 body {
   background-color: #FDFBF7;
   color: #1A2238;
   overflow-x: hidden;
-  /* Add this to make fonts look sharper */
-  -webkit-font-smoothing: antialiased; 
+  -webkit-font-smoothing: antialiased;
 }
 
-/* --- OPTIMIZED TEXTURE (The previous one was too heavy) --- */
-/* We will disable the heavy SVG filter for now to restore smoothness */
-/* If you really want texture later, use a tiny PNG image instead of SVG code */
-
-/* body::before {
-  content: "";
-  ...
-  (DELETE OR COMMENT OUT THE PREVIOUS NOISE CODE)
-} 
-*/
-
+/* Optimized scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
