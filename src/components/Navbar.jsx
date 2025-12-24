@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ShoppingBag, Menu, X } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-// --- FIX: Added useScroll and useSpring to the import below ---
 import { motion, useScroll, useSpring } from 'framer-motion';
+import { useCart } from '../context/CartContext';
 
 export default function Navbar() {
   const location = useLocation();
@@ -10,7 +10,9 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // --- 1. SCROLL PROGRESS LOGIC ---
+  // --- FIX IS HERE: You were missing 'openCart' ---
+  const { cartCount, openCart } = useCart(); 
+
   const { scrollYProgress } = useScroll();
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -18,7 +20,6 @@ export default function Navbar() {
     restDelta: 0.001
   });
 
-  // Detect scroll to change navbar background
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
@@ -50,7 +51,6 @@ export default function Navbar() {
 
   return (
     <>
-      {/* --- PROGRESS BAR --- */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-brand-gold origin-left z-[110]"
         style={{ scaleX }}
@@ -59,7 +59,6 @@ export default function Navbar() {
       <nav className={`fixed w-full z-[100] transition-all duration-300 ${scrolled ? 'bg-brand-royal/95 backdrop-blur-xl shadow-2xl py-3' : 'bg-transparent py-6'}`}>
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
           
-          {/* Brand Logo */}
           <Link to="/" onClick={handleHomeClick} className="group relative z-10">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
@@ -77,7 +76,6 @@ export default function Navbar() {
             </motion.div>
           </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex space-x-12 text-white/90 font-sans text-sm tracking-widest uppercase">
             
             <Link 
@@ -108,15 +106,19 @@ export default function Navbar() {
 
           </div>
 
-          {/* Icons */}
           <motion.div 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="flex items-center space-x-6"
           >
-            <div className="relative group cursor-pointer">
+            {/* Now 'openCart' is defined, so this won't crash */}
+            <div onClick={openCart} className="relative group cursor-pointer">
               <ShoppingBag className="text-white group-hover:text-brand-gold transition-colors" size={24} strokeWidth={1.5} />
-              <span className="absolute -top-2 -right-2 bg-brand-gold text-brand-royal text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">0</span>
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-brand-gold text-brand-royal text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center animate-bounce">
+                  {cartCount}
+                </span>
+              )}
             </div>
             
             <button className="md:hidden text-white" onClick={() => setIsOpen(!isOpen)}>
@@ -125,7 +127,6 @@ export default function Navbar() {
           </motion.div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
         {isOpen && (
           <motion.div 
               initial={{ opacity: 0, y: -20 }}

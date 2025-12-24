@@ -7,16 +7,22 @@ import Footer from "./components/Footer";
 import Hero from "./components/Hero";
 import ProductList from "./components/ProductList";
 import ScrollToTop from "./components/ScrollToTop"; 
+import CartPage from "./components/CartPage";
+import CartSidebar from "./components/CartSidebar"; // <--- IMPORT THIS
+import { CartProvider } from "./context/CartContext";
 
-// --- FIXED FeatureCard ---
 const FeatureCard = ({ title, desc, delay }) => (
   <motion.div 
     initial={{ opacity: 0, y: 50, scale: 0.9 }} 
     whileInView={{ opacity: 1, y: 0, scale: 1 }} 
-    viewport={{ once: false, amount: 0.3 }} // Re-animates on scroll
+    viewport={{ once: false, amount: 0.3 }} 
     transition={{ duration: 0.5, delay: delay }}
-    // Added 'h-full' for equal height and 'will-change-transform' for smooth fps
-    className="h-full p-8 bg-white rounded-[2rem] shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 border border-gray-100 flex flex-col will-change-transform"
+    whileHover={{ 
+      y: -8, 
+      boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+      transition: { duration: 0.2 } 
+    }}
+    className="h-full p-8 bg-white rounded-[2rem] shadow-xl border border-gray-100 flex flex-col will-change-transform"
   >
     <div className="w-12 h-1 bg-brand-gold mb-6 rounded-full"></div>
     <h3 className="font-serif font-bold text-2xl mb-4 text-brand-royal">{title}</h3>
@@ -28,11 +34,8 @@ const HomePage = () => (
   <>
     <Hero />
     <ProductList />
-    
     <section className="bg-brand-cream py-32 px-6 overflow-hidden">
       <div className="max-w-5xl mx-auto">
-        
-        {/* Section Header */}
         <div className="text-center mb-20">
           <motion.h2 
             initial={{ opacity: 0, y: 30 }}
@@ -54,7 +57,6 @@ const HomePage = () => (
           </motion.p>
         </div>
 
-        {/* Animated Grid - Added 'items-stretch' to force equal height */}
         <div className="grid md:grid-cols-3 gap-8 items-stretch">
           <FeatureCard 
             title="100% Homemade" 
@@ -72,7 +74,6 @@ const HomePage = () => (
             delay={0.3} 
           />
         </div>
-
       </div>
     </section>
   </>
@@ -104,40 +105,45 @@ function App() {
   };
 
   return (
-    <Router>
-      <ScrollToTop />
-      
-      <div className="flex flex-col min-h-screen bg-brand-cream font-sans text-brand-royal overflow-x-hidden">
-        <Navbar />
-        
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/shop" element={<ShopPage />} />
-            <Route path="*" element={<div className="text-center py-40 text-xl">Page Not Found</div>} />
-          </Routes>
-        </main>
+    <CartProvider>
+      <Router>
+        <ScrollToTop />
+        <div className="flex flex-col min-h-screen bg-brand-cream font-sans text-brand-royal overflow-x-hidden">
+          <Navbar />
+          
+          {/* --- SIDEBAR MUST BE HERE --- */}
+          <CartSidebar /> 
+          
+          <main className="flex-grow">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/shop" element={<ShopPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="*" element={<div className="text-center py-40 text-xl">Page Not Found</div>} />
+            </Routes>
+          </main>
 
-        <Footer />
+          <Footer />
 
-        <AnimatePresence>
-          {showTopBtn && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={goToTop}
-              className="fixed bottom-8 right-8 z-50 bg-brand-gold text-brand-royal p-4 rounded-full shadow-2xl hover:bg-white transition-colors duration-300 border border-brand-royal/10"
-            >
-              <ArrowUp size={24} strokeWidth={3} />
-            </motion.button>
-          )}
-        </AnimatePresence>
+          <AnimatePresence>
+            {showTopBtn && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={goToTop}
+                className="fixed bottom-8 right-8 z-50 bg-brand-gold text-brand-royal p-4 rounded-full shadow-2xl hover:bg-white transition-colors duration-300 border border-brand-royal/10"
+              >
+                <ArrowUp size={24} strokeWidth={3} />
+              </motion.button>
+            )}
+          </AnimatePresence>
 
-      </div>
-    </Router>
+        </div>
+      </Router>
+    </CartProvider>
   );
 }
 

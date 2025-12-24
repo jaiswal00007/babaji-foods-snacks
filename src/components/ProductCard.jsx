@@ -1,11 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import { ShoppingCart, Star, Info, X, Leaf, Sparkles } from 'lucide-react';
+import { ShoppingCart, Star, Info, X, Leaf, Sparkles, Plus, Minus } from 'lucide-react';
 import { motion, AnimatePresence, useMotionTemplate, useMotionValue } from 'framer-motion';
+// --- IMPORT THE CART HOOK ---
+import { useCart } from '../context/CartContext';
 
 export default function ProductCard({ product, index }) {
   const [activeImage, setActiveImage] = useState(0);
   const [showNutrition, setShowNutrition] = useState(false);
   
+  // --- FIX: IMPORT ALL NEEDED FUNCTIONS ---
+  const { cart, addToCart, updateQuantity, openCart } = useCart();
+
+  // --- FIX: CALCULATE QUANTITY ---
+  // Find if this specific product is in the cart
+  const cartItem = cart.find(item => item.id === product.id);
+  const quantity = cartItem ? cartItem.quantity : 0;
+
   // Mouse Spotlight Logic
   const cardRef = useRef(null);
   const mouseX = useMotionValue(0);
@@ -28,29 +38,14 @@ export default function ProductCard({ product, index }) {
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 50 }} 
-      whileInView={{ opacity: 1, y: 0 }} 
-      viewport={{ 
-        once: false, 
-        amount: 0.2    
-      }}
-      transition={{ 
-        duration: 0.5, 
-        delay: index * 0.1, 
-        ease: "easeOut" 
-      }}
-      // --- FIX 1: Reduced Lift (-5px) to stop Navbar collision ---
-      whileHover={{ 
-        y: -5,  // Was -10 or -15. Reduced to stop flickering.
-        scale: 1.01,
-        transition: { type: "spring", stiffness: 200, damping: 25 } 
-      }}
-      // --- FIX 2: Removed 'hover:z-10' to stop z-index fighting ---
-      // We rely on scale/shadow for the pop effect now
-      className="group relative w-full h-full will-change-transform"
+      initial={{ opacity: 0, y: 50, scale: 0.9 }} 
+      whileInView={{ opacity: 1, y: 0, scale: 1 }} 
+      exit={{ opacity: 0, scale: 0.95 }}
+      viewport={{ once: false, amount: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
+      whileHover={{ y: -5, scale: 1.02, transition: { type: "spring", stiffness: 300, damping: 20 } }}
+      className="group relative w-full h-full will-change-transform perspective-1000"
     >
-      
-      {/* Shadow Glow */}
       <div className="absolute top-8 left-4 right-4 h-full bg-brand-royal/10 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
       <div 
@@ -58,28 +53,15 @@ export default function ProductCard({ product, index }) {
         onMouseMove={handleMouseMove}
         className="relative h-full bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 flex flex-col transition-all duration-500 shadow-lg group-hover:shadow-2xl hover:border-brand-gold/30"
       >
-        
-        {/* Spotlight */}
         <motion.div
           className="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 transition duration-300 group-hover:opacity-100 z-10"
           style={{
-            background: useMotionTemplate`
-              radial-gradient(
-                600px circle at ${mouseX}px ${mouseY}px,
-                rgba(212, 175, 55, 0.08),
-                transparent 80%
-              )
-            `,
+            background: useMotionTemplate`radial-gradient(600px circle at ${mouseX}px ${mouseY}px, rgba(212, 175, 55, 0.08), transparent 80%)`,
           }}
         />
 
-        {/* Image Area */}
         <div className="relative h-[450px] overflow-hidden bg-gray-50">
-          <motion.div 
-            className="w-full h-full"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.8, ease: "circOut" }}
-          >
+          <motion.div className="w-full h-full" whileHover={{ scale: 1.05 }} transition={{ duration: 0.8, ease: "circOut" }}>
             <AnimatePresence mode='wait'>
               <motion.img
                 key={activeImage}
@@ -96,35 +78,22 @@ export default function ProductCard({ product, index }) {
 
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
 
-          {/* Tag */}
           {product.tag && (
             <div className="absolute top-6 left-6 overflow-hidden rounded-full border border-white/20 bg-white/10 backdrop-blur-md shadow-lg z-20">
               <div className="flex items-center gap-2 px-4 py-1.5">
                 <Sparkles size={12} className="text-brand-gold" />
-                <span className="text-[10px] font-bold text-white uppercase tracking-[0.2em]">
-                  {product.tag}
-                </span>
+                <span className="text-[10px] font-bold text-white uppercase tracking-[0.2em]">{product.tag}</span>
               </div>
             </div>
           )}
 
-          {/* Nutrition Toggle */}
-          <button 
-            onClick={() => setShowNutrition(!showNutrition)}
-            className="absolute top-6 right-6 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white hover:bg-brand-gold hover:text-brand-royal transition-all duration-300 shadow-lg"
-          >
+          <button onClick={() => setShowNutrition(!showNutrition)} className="absolute top-6 right-6 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white hover:bg-brand-gold hover:text-brand-royal transition-all duration-300 shadow-lg">
              {showNutrition ? <X size={18} /> : <Info size={18} />}
           </button>
 
-          {/* Nutrition Overlay */}
           <AnimatePresence>
             {showNutrition && (
-              <motion.div 
-                initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-                animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
-                exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-                className="absolute inset-0 z-20 bg-brand-royal/90 p-8 flex flex-col justify-center text-white"
-              >
+              <motion.div initial={{ opacity: 0, backdropFilter: "blur(0px)" }} animate={{ opacity: 1, backdropFilter: "blur(12px)" }} exit={{ opacity: 0, backdropFilter: "blur(0px)" }} className="absolute inset-0 z-20 bg-brand-royal/90 p-8 flex flex-col justify-center text-white">
                 <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
                   <h4 className="font-serif text-3xl text-brand-gold mb-6 italic">Facts</h4>
                   <div className="space-y-4 font-light text-sm">
@@ -140,32 +109,19 @@ export default function ProductCard({ product, index }) {
             )}
           </AnimatePresence>
 
-          {/* Pagination */}
           {!showNutrition && (
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {product.images.map((_, index) => (
-                <div
-                  key={index}
-                  onClick={() => setActiveImage(index)}
-                  className={`cursor-pointer h-1 rounded-full transition-all duration-500 ${
-                    activeImage === index 
-                      ? 'w-6 bg-brand-gold shadow-[0_0_10px_#D4AF37]' 
-                      : 'w-1.5 bg-white/40 hover:bg-white'
-                  }`}
-                />
+                <div key={index} onClick={() => setActiveImage(index)} className={`cursor-pointer h-1 rounded-full transition-all duration-500 ${activeImage === index ? 'w-6 bg-brand-gold shadow-[0_0_10px_#D4AF37]' : 'w-1.5 bg-white/40 hover:bg-white'}`} />
               ))}
             </div>
           )}
         </div>
 
-        {/* Content Area */}
         <div className="relative z-20 -mt-8 bg-white rounded-t-[2.5rem] p-8 flex flex-col flex-grow shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
-          
           <div className="flex justify-between items-start mb-2">
              <div className="w-2/3">
-                <h3 className="font-serif text-2xl md:text-3xl font-bold text-brand-royal leading-tight">
-                  {product.title}
-                </h3>
+                <h3 className="font-serif text-2xl md:text-3xl font-bold text-brand-royal leading-tight">{product.title}</h3>
              </div>
              <div className="text-right">
                 {product.oldPrice && <p className="text-xs text-gray-400 line-through">₹{product.oldPrice}</p>}
@@ -177,28 +133,52 @@ export default function ProductCard({ product, index }) {
               {[...Array(5)].map((_,i) => <Star key={i} size={14} className="text-brand-gold fill-brand-gold" />)}
           </div>
 
-          <p className="text-sm text-gray-500 leading-relaxed mb-6 font-light">
-             {product.description}
-          </p>
+          <p className="text-sm text-gray-500 leading-relaxed mb-6 font-light">{product.description}</p>
 
           <div className="flex flex-wrap gap-2 mb-8">
             {product.ingredients.map((ing, i) => (
               <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-cream border border-brand-gold/20 text-brand-royal text-[10px] font-bold uppercase tracking-wide shadow-sm hover:border-brand-gold transition-colors">
-                <Leaf size={10} className="text-brand-gold" /> 
-                {ing}
+                <Leaf size={10} className="text-brand-gold" /> {ing}
               </span>
             ))}
           </div>
 
           <div className="mt-auto">
-             <button className="relative w-full overflow-hidden rounded-xl bg-brand-royal py-4 text-white font-serif tracking-wide group/btn shadow-lg hover:shadow-brand-royal/40 transition-all duration-300 active:scale-95">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-in-out" />
-                <span className="relative flex items-center justify-center gap-2 group-hover/btn:gap-3 transition-all duration-300">
-                   Add to Cart <ShoppingCart size={16} />
-                </span>
-             </button>
+             {quantity > 0 ? (
+               // --- COUNTER STATE (Active) ---
+               <div className="flex items-center justify-between bg-brand-royal rounded-xl p-1 shadow-lg">
+                  <button 
+                    onClick={() => updateQuantity(product.id, -1)}
+                    className="w-12 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <Minus size={18} />
+                  </button>
+                  
+                  <span className="font-serif text-xl font-bold text-brand-gold">{quantity}</span>
+                  
+                  <button 
+                    onClick={() => updateQuantity(product.id, 1)}
+                    className="w-12 h-10 flex items-center justify-center text-white hover:bg-white/10 rounded-lg transition-colors"
+                  >
+                    <Plus size={18} />
+                  </button>
+               </div>
+             ) : (
+               // --- ADD TO CART STATE (Default) ---
+               <button 
+                  onClick={() => {
+                    addToCart(product);
+                    openCart(); // Open sidebar immediately when added
+                  }}
+                  className="relative w-full overflow-hidden rounded-xl bg-brand-royal py-4 text-white font-serif tracking-wide group/btn shadow-lg hover:shadow-brand-royal/40 transition-all duration-300 active:scale-95"
+               >
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-in-out" />
+                  <span className="relative flex items-center justify-center gap-2 group-hover/btn:gap-3 transition-all duration-300">
+                     Add to Cart <ShoppingCart size={16} />
+                  </span>
+               </button>
+             )}
           </div>
-
         </div>
       </div>
     </motion.div>
