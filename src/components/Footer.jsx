@@ -1,6 +1,7 @@
 import { Phone, Mail, MapPin, Instagram } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Heart } from 'lucide-react';
 
 export default function Footer() {
   const location = useLocation();
@@ -150,16 +151,29 @@ export default function Footer() {
 
       </motion.div>
 
-      {/* Copyright */}
+    {/* Copyright & Developer - Centered Layout */}
       <motion.div 
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
-        // --- CHANGE: Set once: false here too ---
         viewport={{ once: false }}
         transition={{ delay: 0.8, duration: 0.8 }}
-        className="border-t border-white/10 mt-12 pt-8 text-center text-sm text-gray-500"
+        className="border-t border-white/10 mt-12 pt-8 flex flex-col items-center gap-3"
       >
-        © 2025 Babaji Foods & Snacks. All Rights Reserved.
+        {/* Brand Copyright */}
+        <p className="text-gray-500 text-sm tracking-wide">
+          © 2025 Babaji Foods & Snacks. All Rights Reserved.
+        </p>
+
+        {/* Developer Credit - Subtle & Elegant */}
+        <div className="flex items-center gap-2 text-xs text-gray-600 bg-white/5 px-4 py-1.5 rounded-full border border-white/5 hover:border-brand-gold/30 transition-colors">
+          <span className="font-light">Designed & Developed by</span>
+          <a 
+            href="https://www.linkedin.com/in/anshu-jaiswal-a76b192b7/" // Add your portfolio/LinkedIn link here
+            className="text-brand-gold font-bold tracking-wider hover:text-white transition-colors uppercase"
+          >
+            Anshu Jaiswal
+          </a>
+        </div>
       </motion.div>
     </footer>
   );

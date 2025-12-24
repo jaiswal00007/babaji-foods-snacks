@@ -10,6 +10,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import CartPage from "./components/CartPage";
 import CartSidebar from "./components/CartSidebar"; // <--- IMPORT THIS
 import { CartProvider } from "./context/CartContext";
+import ComingSoon from "./components/ComingSoon";
 
 const FeatureCard = ({ title, desc, delay }) => (
   <motion.div 
@@ -119,6 +120,8 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/about" element={<ComingSoon />} />
+              <Route path="/terms" element={<ComingSoon />} />
               <Route path="*" element={<div className="text-center py-40 text-xl">Page Not Found</div>} />
             </Routes>
           </main>
