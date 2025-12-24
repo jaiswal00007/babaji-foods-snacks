@@ -26,35 +26,39 @@ export default function ProductCard({ product, index }) {
     return () => clearInterval(interval);
   }, [showNutrition, product.images.length]);
 
-  return (
+return (
     <motion.div 
-      initial={{ opacity: 0, y: 100, scale: 0.95 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: "-100px" }}
-      transition={{ 
-        duration: 0.8, 
-        delay: index * 0.2, // Stagger effect based on index
-        ease: [0.25, 1, 0.5, 1] // "Luxury" ease curve
+      initial={{ opacity: 0, y: 50 }} // Reduced distance (was 100)
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      whileHover={{ 
+        y: -10, 
+        scale: 1.01,
+        transition: { type: "spring", stiffness: 200, damping: 25 } 
       }}
-      className="group relative w-full h-full perspective-1000"
+      transition={{ duration: 0.5, delay: index * 0.1 }} // Faster duration (was 0.8)
+      
+      // ADD 'will-change-transform' HERE to fix the lag
+      className="group relative w-full h-full z-0 hover:z-10 will-change-transform" 
     >
-      {/* --- FLOATING SHADOW (Appears on Hover) --- */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-brand-gold/30 to-brand-royal/30 rounded-[2.6rem] blur-xl opacity-0 group-hover:opacity-70 transition duration-1000 group-hover:duration-200" />
+      
+      {/* --- SHADOW GLOW (Appears behind card on hover) --- */}
+      <div className="absolute top-8 left-4 right-4 h-full bg-brand-royal/10 rounded-[2.5rem] blur-2xl opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none" />
 
       <div 
         ref={cardRef}
         onMouseMove={handleMouseMove}
-        className="relative h-full bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 flex flex-col hover:border-brand-gold/30 transition-colors duration-500"
+        className="relative h-full bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 flex flex-col transition-all duration-500 shadow-lg group-hover:shadow-2xl hover:border-brand-gold/30"
       >
         
-        {/* --- SPOTLIGHT EFFECT LAYER --- */}
+        {/* --- GOLD SPOTLIGHT LAYER --- */}
         <motion.div
           className="pointer-events-none absolute -inset-px rounded-[2.5rem] opacity-0 transition duration-300 group-hover:opacity-100 z-10"
           style={{
             background: useMotionTemplate`
               radial-gradient(
-                650px circle at ${mouseX}px ${mouseY}px,
-                rgba(212, 175, 55, 0.15),
+                600px circle at ${mouseX}px ${mouseY}px,
+                rgba(212, 175, 55, 0.08),
                 transparent 80%
               )
             `,
@@ -63,65 +67,66 @@ export default function ProductCard({ product, index }) {
 
         {/* --- IMAGE AREA --- */}
         <div className="relative h-[450px] overflow-hidden bg-gray-50">
-          <AnimatePresence mode='wait'>
-            <motion.img
-              key={activeImage}
-              initial={{ scale: 1.15, opacity: 0, filter: "blur(10px)" }}
-              animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: "circOut" }}
-              src={product.images[activeImage]}
-              alt={product.title}
-              className="w-full h-full object-cover will-change-transform"
-            />
-          </AnimatePresence>
+          
+          {/* Image Zoom Wrapper */}
+          <motion.div 
+            className="w-full h-full"
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.8, ease: "circOut" }}
+          >
+            <AnimatePresence mode='wait'>
+              <motion.img
+                key={activeImage}
+                initial={{ scale: 1.1, opacity: 0, filter: "blur(5px)" }}
+                animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                src={product.images[activeImage]}
+                alt={product.title}
+                className="w-full h-full object-cover"
+              />
+            </AnimatePresence>
+          </motion.div>
 
-          {/* Cinematic Dark Gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
+          {/* Cinematic Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
 
-          {/* Floating Glass Tag */}
+          {/* Tag */}
           {product.tag && (
-            <motion.div 
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="absolute top-6 left-6 overflow-hidden rounded-full border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl z-20"
-            >
-              <div className="flex items-center gap-2 px-4 py-2">
-                <Sparkles size={12} className="text-brand-gold animate-pulse" />
+            <div className="absolute top-6 left-6 overflow-hidden rounded-full border border-white/20 bg-white/10 backdrop-blur-md shadow-lg z-20">
+              <div className="flex items-center gap-2 px-4 py-1.5">
+                <Sparkles size={12} className="text-brand-gold" />
                 <span className="text-[10px] font-bold text-white uppercase tracking-[0.2em]">
                   {product.tag}
                 </span>
               </div>
-            </motion.div>
+            </div>
           )}
 
-          {/* Info Button */}
+          {/* Nutrition Toggle */}
           <button 
             onClick={() => setShowNutrition(!showNutrition)}
-            className="absolute top-6 right-6 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white hover:bg-brand-gold hover:text-brand-royal transition-all duration-300 group/btn"
+            className="absolute top-6 right-6 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white hover:bg-brand-gold hover:text-brand-royal transition-all duration-300 shadow-lg"
           >
-             <div className="relative">
-                {showNutrition ? <X size={18} /> : <Info size={18} />}
-             </div>
+             {showNutrition ? <X size={18} /> : <Info size={18} />}
           </button>
 
-          {/* Nutrition Panel (Frosted Glass) */}
+          {/* Nutrition Overlay */}
           <AnimatePresence>
             {showNutrition && (
               <motion.div 
-                initial={{ backdropFilter: "blur(0px)", opacity: 0 }}
-                animate={{ backdropFilter: "blur(15px)", opacity: 1 }}
-                exit={{ backdropFilter: "blur(0px)", opacity: 0 }}
+                initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+                animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
+                exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
                 className="absolute inset-0 z-20 bg-brand-royal/90 p-8 flex flex-col justify-center text-white"
               >
-                <motion.div initial={{ y: 20 }} animate={{ y: 0 }} transition={{ delay: 0.1 }}>
-                  <h4 className="font-serif text-3xl text-brand-gold mb-8 italic">Nutrition Facts</h4>
-                  <div className="space-y-6 font-light">
-                    {Object.entries(product.nutrition).map(([key, value], idx) => (
-                      <div key={key} className="flex justify-between border-b border-white/10 pb-3">
+                <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }}>
+                  <h4 className="font-serif text-3xl text-brand-gold mb-6 italic">Facts</h4>
+                  <div className="space-y-4 font-light text-sm">
+                    {Object.entries(product.nutrition).map(([key, value]) => (
+                      <div key={key} className="flex justify-between border-b border-white/10 pb-2">
                         <span className="capitalize text-gray-300">{key}</span>
-                        <span className="font-serif text-xl">{value}</span>
+                        <span className="font-serif text-lg">{value}</span>
                       </div>
                     ))}
                   </div>
@@ -132,14 +137,14 @@ export default function ProductCard({ product, index }) {
 
           {/* Pagination Dots */}
           {!showNutrition && (
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-20">
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
               {product.images.map((_, index) => (
                 <div
                   key={index}
                   onClick={() => setActiveImage(index)}
-                  className={`cursor-pointer h-1 rounded-full transition-all duration-700 ease-out ${
+                  className={`cursor-pointer h-1 rounded-full transition-all duration-500 ${
                     activeImage === index 
-                      ? 'w-8 bg-brand-gold shadow-[0_0_15px_rgba(212,175,55,0.8)]' 
+                      ? 'w-6 bg-brand-gold shadow-[0_0_10px_#D4AF37]' 
                       : 'w-1.5 bg-white/40 hover:bg-white'
                   }`}
                 />
@@ -148,17 +153,14 @@ export default function ProductCard({ product, index }) {
           )}
         </div>
 
-        {/* --- CONTENT AREA (Overlapping Paper Effect) --- */}
-        <div className="relative z-20 -mt-8 bg-white rounded-t-[2.5rem] p-8 flex flex-col flex-grow shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
+        {/* --- CONTENT AREA (The Paper Effect) --- */}
+        <div className="relative z-20 -mt-8 bg-white rounded-t-[2.5rem] p-8 flex flex-col flex-grow shadow-[0_-10px_30px_rgba(0,0,0,0.05)]">
           
-          <div className="flex justify-between items-start mb-4">
-             <div>
-                <h3 className="font-serif text-3xl font-bold text-brand-royal leading-none mb-2">
+          <div className="flex justify-between items-start mb-2">
+             <div className="w-2/3">
+                <h3 className="font-serif text-2xl md:text-3xl font-bold text-brand-royal leading-tight">
                   {product.title}
                 </h3>
-                <div className="flex gap-1">
-                   {[...Array(5)].map((_,i) => <Star key={i} size={12} className="text-brand-gold fill-brand-gold" />)}
-                </div>
              </div>
              <div className="text-right">
                 {product.oldPrice && <p className="text-xs text-gray-400 line-through">₹{product.oldPrice}</p>}
@@ -166,23 +168,32 @@ export default function ProductCard({ product, index }) {
              </div>
           </div>
 
+          {/* Stars */}
+          <div className="flex gap-1 mb-4">
+              {[...Array(5)].map((_,i) => <Star key={i} size={14} className="text-brand-gold fill-brand-gold" />)}
+          </div>
+
           <p className="text-sm text-gray-500 leading-relaxed mb-6 font-light">
              {product.description}
           </p>
 
+          {/* --- INGREDIENTS (Restored & Enhanced) --- */}
           <div className="flex flex-wrap gap-2 mb-8">
             {product.ingredients.map((ing, i) => (
-              <span key={i} className="px-3 py-1 rounded-full bg-brand-cream border border-brand-gold/10 text-[10px] font-bold uppercase tracking-wide text-brand-royal flex items-center gap-1">
-                <Leaf size={10} className="text-brand-gold" /> {ing}
+              <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-cream border border-brand-gold/20 text-brand-royal text-[10px] font-bold uppercase tracking-wide shadow-sm hover:border-brand-gold transition-colors">
+                <Leaf size={10} className="text-brand-gold" /> 
+                {ing}
               </span>
             ))}
           </div>
 
-          {/* Magnetic Hover Button */}
+          {/* Liquid Gold Button */}
           <div className="mt-auto">
-             <button className="relative w-full overflow-hidden rounded-xl bg-brand-royal py-4 text-white font-serif tracking-wide group/btn shadow-lg transition-transform active:scale-95">
+             <button className="relative w-full overflow-hidden rounded-xl bg-brand-royal py-4 text-white font-serif tracking-wide group/btn shadow-lg hover:shadow-brand-royal/40 transition-all duration-300 active:scale-95">
+                {/* Gradient Swipe Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000 ease-in-out" />
-                <span className="relative flex items-center justify-center gap-2 group-hover/btn:gap-4 transition-all duration-300">
+                
+                <span className="relative flex items-center justify-center gap-2 group-hover/btn:gap-3 transition-all duration-300">
                    Add to Cart <ShoppingCart size={16} />
                 </span>
              </button>
