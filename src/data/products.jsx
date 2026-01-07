@@ -10,7 +10,7 @@ export const products = [
     ingredients: ["Pure Ghee", "Cashews", "Almonds", "Suji"], 
     nutrition: {
       energy: "250 Kcal",
-      protein: "5g",
+      protein: "5g", 
       carbs: "60g",
       fat: "32g"
     },
@@ -22,8 +22,8 @@ export const products = [
   {
     id: 2,
     title: "Premium Thekua (15 Pcs)",
-    price: 599,
-    oldPrice: 799,
+    price: 449,
+    oldPrice: 599,
     description: "The perfect family pack. Loaded with dry fruits and traditional flavor.",
     tag: "Family Value Pack",
     // Extracted from your PDF [cite: 26, 28]
@@ -35,8 +35,8 @@ export const products = [
       fat: "32g"
     },
     images: [
-      "/assets/thekua02.jpeg",
-      "/assets/thekua03.jpeg"
+      "/assets/thekua03.jpeg",
+      "/assets/thekua01.jpeg"
     ]
   }
 ];
